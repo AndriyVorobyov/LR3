@@ -32,56 +32,30 @@ choco install terraform
 
 Тепер можна створювати папку, в якій буду зберігатися дані terraform. Перенесемо туди файл ключа та зробимо файл з назвою "main.tf", де буде знаходитись основна частина коду. Відкриємо "main.tf" та запишемо такі рядки.
 
-![image_2023-05-05_18-28-14](https://user-images.githubusercontent.com/132616149/236502277-a094d8a8-0d4c-4cc1-bd3b-27ac43013d44.png)
+![image](https://user-images.githubusercontent.com/132616149/236502913-fd32d6f4-c1d7-400f-bb54-08e3900bdb33.png)
 
 
 Вказуємо з яким клаудом будемо працювати, в цьому випадку це Google. З сайту hashicorp знаходимо необхідний нам конфіг та вказуємо його у source, також вказуємо необхідну версію.
 
-![image_2023-05-05_18-28-49](https://user-images.githubusercontent.com/132616149/236502384-a31d0a2a-e7aa-4be0-855e-70eb581c7952.png)
+![image_2023-05-05_18-28-14](https://user-images.githubusercontent.com/132616149/236502952-ad536cb6-bd31-45fb-92fd-d79ac634a261.png)
 
 
 Надалі вказуємо дані необхідні для роботи, тобто ключ, проект, з яким будемо працювати, регіон та зону. Їх буде записано в окремому файлі "variables.tf", тому до них ще повернемось
 
-![image_2023-05-05_18-29-19](https://user-images.githubusercontent.com/132616149/236502504-47bdbfcd-6a9c-483b-8f94-49d0a457d3fd.png)
+![image_2023-05-05_18-28-49](https://user-images.githubusercontent.com/132616149/236503035-aa0ea14c-220b-4038-bc34-8dcab81cad48.png)
 
 
 Створюємо мережу у вибраному проекті з назвою "boops-network". За допомогою передостанньої строки виключаємо автоматичне створення сабнетворків.
 
 Тепер створимо сабнетворк.
 
-```
-resource "google_compute_subnetwork" "fishing_subnetwork"{
-  name = "bass-subnetwork"
-  region = var.subnet-region
-  network = google_compute_network.vpc_network.name
-  ip_cidr_range = "10.0.0.0/16"
-}
-```
+![image_2023-05-05_18-29-19](https://user-images.githubusercontent.com/132616149/236503197-8a4ebc68-feab-4975-8bde-84007c436a20.png)
 
 Ім'ям обрано "bass-subnetwork", регіон буде зазначено у файлі "variables.tf". Мережею обираємо раніше створену та вказуємо IP-адресу "10.0.0.0" з маскою підмережі в 16 біт. 
 
 Перейдемо до створення віртуальної машини. По-перше задамо ім'я "cod-instance" та конфігурацію машини "e2-micro". Таку машину обрано задля економії. Додамо можливі теги.
 
-```
-resource "google_compute_instance" "vm_instance" {
-  name         = "cod-instance"
-  machine_type = "e2-micro"
-  tags = ["khai", "university", "test", "devops", "group-546", "fishing", "studying", "learning"]
-  
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-    }
-  }
-
-  network_interface {
-    network = google_compute_network.vpc_network.name
-    subnetwork = google_compute_subnetwork.fishing_subnetwork.name
-    access_config {
-    }
-  }
-}
-```
+![image_2023-05-05_18-30-05](https://user-images.githubusercontent.com/132616149/236503306-12e7844d-d791-428f-949e-22b749525a69.png)
 
 У розділі boot_disk оберемо бажаний образ операційної системи (Debian 11). Під network_interface задаємо мережу та сабнетворк, створені раніше.
 
@@ -89,37 +63,13 @@ resource "google_compute_instance" "vm_instance" {
 
 Розглянемо "variables.tf"
 
-```
-variable "project" {
-    default = "fish-382414"
- }
-
-variable "credentials_file" {
-    default = "FILE-NAME.json"
- }
-
-variable "region" {
-  default = "us-central1"
-}
-
-variable "zone" {
-  default = "us-central1-c"
-}
-
-variable "subnet-region" {
-  default = "us-central1"
-}
-```
+![image_2023-05-05_18-30-32](https://user-images.githubusercontent.com/132616149/236503376-69af5372-93e0-430f-8f0f-24f06665e61e.png)
 
 Тут записані усі раніше використані змінні та їх значення за замовчуванням. У прикладі зверху значення змінної "credentials_file" було змінено в цілях безпеки.
 
 Розглянемо "outputs.tf"
 
-```
-output "ip" {
-  value = google_compute_instance.vm_instance.network_interface.0.network_ip
-}
-```
+![image_2023-05-05_18-31-03](https://user-images.githubusercontent.com/132616149/236503467-f6e7eb61-c9f4-440b-816b-fa32f8d5531b.png)
 
 Цей код видасть нам IP-адресу машини при виконанні terraform apply.
 
